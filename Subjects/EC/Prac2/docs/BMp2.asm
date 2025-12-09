@@ -612,15 +612,57 @@ markMineP2:
    ;guardem l'estat dels registres del processador perquè
    ;les funcions de C no mantenen l'estat dels registres.
    
-   
-   
-   mm_end:
+   ; rdi = &marks, rsi = row, rdx = col, rcx = numMines
+
+   ; calculo row * 9 + col
+   ; eax = row
+   mov eax, esi
+   ; eax = row * 9
+   imul eax, eax, 9
+   ; eax = row * 9 + col
+   add eax, edx
+   ; rdi = &marks[row][col]
+   add rdi, rax
+
+   ;assigno valor a marks
+   mov bl, byte[rdi]
+
+   ; if (marks[row][col] == ' ' && numMines > 0)
+   cmp bl, ' '
+   jne mm_else_block
+
+   ; numMines > 0 ?
+   cmp rcx, 0
+   jle mm_else_block
+
+   ; marquem 'M' si presiono tecla
+   mov byte [rdi], 'M'
+   ; numMines--
+   dec rcx                   
+   jmp mm_mostrar_marca
+
+mm_else_block:
+   ; else if (marks[row][col] == 'M')
+   cmp bl, 'M'
+   jne mm_mostrar_marca
+
+   ; desmarquem si es espai blanc
+   mov byte [rdi], ' '
+   ; numMines++
+   inc rcx
+
+mm_mostrar_marca:
+   mov rdi, [rbp+16]
+   mov rsi, [rbp+24]
+   mov rdx, [rbp+32]
+   call showMarkP2
+
+mm_end:
    ;restaurar l'estat dels registres que s'han guardat a la pila.    
    
    mov rsp, rbp
    pop rbp
    ret
-		
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 ; Obrir casella. Mirar quantes mines hi ha al voltant de la 
