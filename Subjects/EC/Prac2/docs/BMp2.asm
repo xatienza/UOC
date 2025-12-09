@@ -441,26 +441,21 @@ showMarkP2:
    ;les funcions de C no mantenen l'estat dels registres.  
    
    ; params => rdi = &marks[0][0], rsi = row i rdx = col
-   
+   mov r8d, esi 
+   mov r9d, edx
+
    ; posicionar el cursor
    mov edi, esi
    mov esi, edx
    call posCursorP2
 
    ; accedeixo a a marks[row][col]
-   mov eax, esi
-   mov ecx, edi
-
-   ; la crida a posCursorP2 ha modificat edi/esi
-   mov ecx, [rbp+16]
-   mov edx, [rbp+24]
-
-   ; offset = row * 9
-   imul ecx, ecx, 9
-   add  ecx, edx
+   mov eax, r8d
+   imul eax, eax, 9
+   add eax, r9d
    
    ; rdi = base address de marks[]
-   add rdi, rcx
+   add rdi, rax
 
    ; carregar el caràcter
    mov bl, byte [rdi]
@@ -471,7 +466,6 @@ showMarkP2:
 
 smk_end:
    ;restaurar l'estat dels registres que s'han guardat a la pila.
-   
    mov rsp, rbp
    pop rbp
    ret
@@ -614,6 +608,9 @@ markMineP2:
    
    ; els paràmtres són rdi = &marks, rsi = row, rdx = col, rcx = numMines
 
+   ;guardo marks
+   mov r8, rdi
+
    ; calculo row * 9 + col
    ; eax = row
    mov eax, esi
@@ -652,9 +649,7 @@ mm_else_block:
    inc rcx
 
 mm_mostrar_marca:
-   mov rdi, [rbp+16]
-   mov rsi, [rbp+24]
-   mov rdx, [rbp+32]
+   mov rdi, r8 
    call showMarkP2
 
 mm_end:
@@ -700,6 +695,10 @@ searchMinesP2:
    ;guardem l'estat dels registres del processador perquè
    ;les funcions de C no mantenen l'estat dels registres.
    
+   ; guardar r12 i r13
+   push r12
+   push r13
+
    ; els paràmtres són rdi = marks, rsi = row, rdx = col ,rcx = mines i r8b = state
    ; llegixo marks[row][col] i 
    
@@ -880,7 +879,10 @@ sm_end_return:
 
 sm_end:
    ;restaurar l'estat dels registres que s'han guardat a la pila.
-   
+   ; restaurar r12 i r13
+   pop r13
+   pop r12
+
    mov rsp, rbp
    pop rbp
    ret
