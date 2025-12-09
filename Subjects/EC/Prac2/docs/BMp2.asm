@@ -526,7 +526,7 @@ moveCursorP2:
 ; i = amunt
 mv_amunt:
    ; if (row > 0)
-   cmp esi, 0          
+   cmp esi, 0
    jle mv_calcul_index
    
    ; row--
@@ -909,16 +909,68 @@ checkEndP2:
    ;guardem l'estat dels registres del processador perquè
    ;les funcions de C no mantenen l'estat dels registres.
    
+   ; parametres rdi = marks, rsi = numMines i dx = state
    
-   
-   che_end:
+   ; numMines != 0 llavors retorno state
+   cmp rsi, 0
+   jne che_return_state
+
+   ; comtador
+   xor r8d, r8d
+   ; i = 0
+   xor r9d, r9d
+
+che_loop_i:
+   cmp r9d, 9
+   jge che_check_result
+
+   ; j = 0
+   xor r10d, r10d
+
+che_loop_j:
+   cmp r10d, 9
+   jge che_next_i
+
+   ; offset = i * 9 + j
+   mov eax, r9d
+   imul eax, eax, 9
+   add eax, r10d
+
+   ; carregar marks[i][j]
+   mov bl, byte [rdi + rax]
+   cmp bl, ' '
+   jne che_skip_add
+
+   ; notOpenMarks++
+   inc r8d
+
+che_skip_add:
+   ; j++
+   inc r10d
+   jmp che_loop_j
+
+che_next_i:
+   ; i++
+   inc r9d
+   jmp che_loop_i
+
+che_check_result:
+   cmp r8d, 0
+   jne che_return_state
+
+   ; notOpenMarks == 0
+   mov dx, 2
+
+; retorno state
+che_return_state:
+   mov ax, dx
+
+che_end:
    ;restaurar l'estat dels registres que s'han guardat a la pila. 
-   
    mov rsp, rbp
    pop rbp
    ret
    
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Joc del Buscamines
 ; Subrutina principal del joc
