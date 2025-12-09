@@ -390,9 +390,24 @@ posCursorP2:
    push rbp
    mov  rbp, rsp
    ;guardem l'estat dels registres del processador perquè
-   ;les funcions de C no mantenen l'estat dels registres.	
+   ;les funcions de C no mantenen l'estat dels registres.
+
+   ; params => rdi = row i rsi = col
    
-   
+   ; rowScreen = row * 2 + 8
+   mov eax, edi        ; eax = row
+   imul eax, 2         ; eax = row * 2
+   add eax, 8          ; eax = rowScreen
+   mov edi, eax        ; edi = rowScreen
+
+   ; colScreen = col * 4 + 7
+   mov eax, esi        ; eax = col
+   imul eax, 4         ; eax = col * 4
+   add eax, 7          ; eax = colScreen
+   mov esi, eax        ; esi = colScreen
+
+   ; crido a gotoxyP2(rowScreen, colScreen)
+   call gotoxyP2
    
    pc_end:
    ;restaurar l'estat dels registres que s'han guardat a la pila.
