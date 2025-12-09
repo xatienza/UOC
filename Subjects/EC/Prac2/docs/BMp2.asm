@@ -441,20 +441,24 @@ showMarkP2:
    ;les funcions de C no mantenen l'estat dels registres.  
    
    ; params => rdi = &marks[0][0], rsi = row i rdx = col
-   mov r8d, esi 
-   mov r9d, edx
+   ; guardo punter marks
+    mov r8, rdi
+
+   mov r9d, esi 
+   mov r10d, edx
 
    ; posicionar el cursor
-   mov edi, esi
-   mov esi, edx
+   mov edi, r9d
+   mov esi, r10d
    call posCursorP2
 
    ; accedeixo a a marks[row][col]
-   mov eax, r8d
+   mov eax, r9d
    imul eax, eax, 9
-   add eax, r9d
+   add eax, r10d
    
    ; rdi = base address de marks[]
+   mov rdi, r8
    add rdi, rax
 
    ; carregar el caràcter
@@ -1065,7 +1069,7 @@ playP2:
    mov  r10d, 5          ;row=5;
    mov  r11d, 4          ;col=4;
 
-   p_while               ;bucle principal del joc.
+   p_while:               ;bucle principal del joc.
    cmp  r9w, 1          ;while (state == 1) {            
    jne  p_printMessage
 
