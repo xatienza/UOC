@@ -1,7 +1,7 @@
 section .note.GNU-stack noalloc noexec nowrite progbits
 section .data               
 ;Canviar Nom i Cognom per les vostres dades.
-developer db "_Nom_ _Cognom1_",0
+developer db "_Xavier_ _Sánchez_",0
 
 ;Constants que també estan definides en C.
 DIMMATRIX    equ 9
@@ -235,21 +235,56 @@ getchP2:
 ; Paràmetres de sortida: 
 ; (numMines):rax(rax): Mines que queden per marcar.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-countMinesP2
+countMinesP2:
    push rbp
    mov  rbp, rsp
-   ;guardem l'estat dels registres del processador perquè
-   ;les funcions de C no mantenen l'estat dels registres.  
-   
-   
-   
-   cm_end:
-   ;restaurar l'estat dels registres que s'han guardat a la pila.
-   			
+
+   ; comptador de mines = 0
+   xor rax, rax
+
+   ; i = 0 (fila)        
+   xor rsi, rsi
+
+outer_loop:
+   cmp rsi, 9
+   jge end_count
+
+   xor rdx, rdx
+
+inner_loop:
+   ; final de fila?
+   cmp rdx, 9
+   jge next_row
+
+   ; adreça mines[i][j]
+   mov rcx, rsi
+   imul rcx, 9 
+   add rcx, rdx
+   add rcx, rdi
+
+   ; comparem amb '*'
+   mov bl, byte [rcx]
+   cmp bl, '*'
+   jne no_mine
+
+   ; mina trobada
+   inc rax
+
+no_mine:
+   ; j++
+   inc rdx             
+   jmp inner_loop
+
+next_row:
+   ; i++
+   inc rsi
+   jmp outer_loop
+
+end_count:
+   ; totes les mines
    mov rsp, rbp
    pop rbp
    ret
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Converteix el valor (numMines), mines que queden per marcar,
