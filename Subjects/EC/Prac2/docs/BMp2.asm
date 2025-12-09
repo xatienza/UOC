@@ -440,9 +440,36 @@ showMarkP2:
    ;guardem l'estat dels registres del processador perquè
    ;les funcions de C no mantenen l'estat dels registres.  
    
+   ; params => rdi = &marks[0][0], rsi = row i rdx = col
    
+   ; posicionar el cursor
+   mov edi, esi
+   mov esi, edx
+   call posCursorP2
+
+   ; accedeixo a a marks[row][col]
+   mov eax, esi
+   mov ecx, edi
+
+   ; la crida a posCursorP2 ha modificat edi/esi
+   mov ecx, [rbp+16]
+   mov edx, [rbp+24]
+
+   ; offset = row * 9
+   imul ecx, ecx, 9
+   add  ecx, edx
    
-   smk_end:
+   ; rdi = base address de marks[]
+   add rdi, rcx
+
+   ; carregar el caràcter
+   mov bl, byte [rdi]
+
+   ; mostro el caràcter vía printchP2(c)
+   mov dil, bl
+   call printchP2
+
+smk_end:
    ;restaurar l'estat dels registres que s'han guardat a la pila.
    
    mov rsp, rbp
