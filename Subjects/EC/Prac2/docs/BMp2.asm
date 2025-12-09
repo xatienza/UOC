@@ -612,7 +612,7 @@ markMineP2:
    ;guardem l'estat dels registres del processador perquè
    ;les funcions de C no mantenen l'estat dels registres.
    
-   ; rdi = &marks, rsi = row, rdx = col, rcx = numMines
+   ; els paràmtres són rdi = &marks, rsi = row, rdx = col, rcx = numMines
 
    ; calculo row * 9 + col
    ; eax = row
@@ -700,15 +700,190 @@ searchMinesP2:
    ;guardem l'estat dels registres del processador perquè
    ;les funcions de C no mantenen l'estat dels registres.
    
+   ; els paràmtres són rdi = marks, rsi = row, rdx = col ,rcx = mines i r8b = state
+   ; llegixo marks[row][col] i 
    
-   
-   sm_end:
+   ; eax = row
+   mov eax, esi
+   ; eax = row * 9
+   imul eax, eax, 9
+   ; eax = row*9 + col
+   add eax, edx
+   ; r9 = &marks
+   mov r9, rdi
+   ; r9 = &marks[row][col]
+   add r9, rax
+
+   mov bl, byte [r9]
+
+   ; fins que sigui ' '
+   cmp bl, ' '
+   jne sm_end_return
+
+   ; llegir mines[row][col]
+   mov eax, esi
+   imul eax, eax, 9
+   add eax, edx
+   ; r10 = &mines
+   mov r10, rcx
+   add r10, rax
+
+   ; bl = mines[row][col]
+   mov bl, byte [r10]
+
+   ; explota si es diferent de ' '
+   cmp bl, ' '
+   jne sm_boom
+
+   ; no hi ha mina, veiem veines
+   xor r11d, r11d
+    
+   ; amunt
+   cmp esi, 0
+   jle validem_centre
+
+   ; row-1 = r12d
+   mov r12d, esi
+   dec r12d
+
+   ; amunt-esquerra
+   cmp edx, 0
+   jle saltem_amunt_esquerra
+   mov r13d, edx
+   dec r13d
+   mov eax, r12d
+   imul eax, eax, 9
+   add eax, r13d
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_amunt_esquerra
+   inc r11d
+saltem_amunt_esquerra:
+
+   ; amunt-centre
+   mov eax, r12d
+   imul eax, eax, 9
+   add eax, edx
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_amunt_centre
+   inc r11d
+saltem_amunt_centre:
+
+   ; amunt-dreta
+   cmp edx, 8
+   jge saltem_amunt_dreta
+   mov r13d, edx
+   inc r13d
+   mov eax, r12d
+   imul eax, eax, 9
+   add eax, r13d
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_amunt_dreta
+   inc r11d
+saltem_amunt_dreta:
+
+validem_centre:
+
+   ; centre_esquerra
+   cmp edx, 0
+   jle saltem_centre_esquerra
+   mov r13d, edx
+   dec r13d
+   mov eax, esi
+   imul eax, eax, 9
+   add eax, r13d
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_centre_esquerra
+   inc r11d
+saltem_centre_esquerra:
+
+   ; centre_dreta
+   cmp edx, 8
+   jge saltem_centre_dreta
+   mov r13d, edx
+   inc r13d
+   mov eax, esi
+   imul eax, eax, 9
+   add eax, r13d
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_centre_dreta
+   inc r11d
+saltem_centre_dreta:
+
+   ; avall (row < 8)
+   cmp esi, 8
+   jge sm_escriure_valor
+
+   mov r12d, esi
+   inc r12d
+
+   ; avall_esquerra
+   cmp edx, 0
+   jle saltem_avall_esquerra
+   mov r13d, edx
+   dec r13d
+   mov eax, r12d
+   imul eax, eax, 9
+   add eax, r13d
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_avall_esquerra
+   inc r11d
+saltem_avall_esquerra:
+
+   ; avall_centre
+   mov eax, r12d
+   imul eax, eax, 9
+   add eax, edx
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_avall_centre
+   inc r11d
+saltem_avall_centre:
+
+   ; avall_dreta
+   cmp edx, 8
+   jge saltem_avall_dreta
+   mov r13d, edx
+   inc r13d
+   mov eax, r12d
+   imul eax, eax, 9
+   add eax, r13d
+   mov bl, byte [rcx+rax]
+   cmp bl, '*'
+   jne saltem_avall_dreta
+   inc r11d
+saltem_avall_dreta:
+
+sm_escriure_valor:
+   ; marks[row][col] = neighbors + '0'
+   mov eax, r11d
+   add al, '0'
+   mov byte [r9], al
+
+   ; cridem showMarkP2
+   call showMarkP2
+
+   mov al, r8b
+   jmp sm_end
+
+sm_boom:
+   mov al, 3
+   jmp sm_end
+
+sm_end_return:
+   mov al, r8b
+
+sm_end:
    ;restaurar l'estat dels registres que s'han guardat a la pila.
    
    mov rsp, rbp
    pop rbp
    ret
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ; Verificar si hem marcat totes les mines (numMines=0) i hem obert o
