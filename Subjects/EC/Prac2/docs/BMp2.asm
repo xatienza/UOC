@@ -506,9 +506,75 @@ moveCursorP2:
    ;guardem l'estat dels registres del processador perquè
    ;les funcions de C no mantenen l'estat dels registres.
    
-   mc_end:
-   ;restaurar l'estat dels registres que s'han guardat a la pila.
+   ; params => rdi = c, rsi = row i rdx = col
+   ; switch(c)
+   cmp dil, 'i'
+   je mv_amunt
+
+   cmp dil, 'j'
+   je mv_esquerra
+
+   cmp dil, 'k'
+   je mv_avall
+
+   cmp dil, 'l'
+   je mv_dreta
+
+   ;altres tecles no mou
+   jmp mv_calcul_index 
+
+; i = amunt
+mv_amunt:
+   ; if (row > 0)
+   cmp esi, 0          
+   jle mv_calcul_index
    
+   ; row--
+   dec esi
+   jmp mv_calcul_index
+
+; j = esquerra
+mv_esquerra:
+   ; if (col > 0)
+   cmp edx, 0
+   jle mv_calcul_index
+   
+   ; col--
+   dec edx
+   jmp mv_calcul_index
+
+; k = avall
+mv_avall:
+   ; if (row < DIMMATRIX-1)
+   cmp esi, 8
+   jge mv_calcul_index
+
+   ; row++   
+   inc esi
+   jmp mv_calcul_index
+
+; l = dreta
+mv_dreta:
+   ; if (col < DIMMATRIX-1)
+   cmp edx, 8
+   jge mv_calcul_index
+
+   ; col++
+   inc edx
+   jmp mv_calcul_index
+
+mv_calcul_index:
+   ; eax = row
+   mov eax, esi
+   
+   ; eax = row * 9
+   imul eax, eax, 9
+
+   ; eax += col
+   add eax, edx
+
+mc_end:
+   ;restaurar l'estat dels registres que s'han guardat a la pila.
    mov rsp, rbp
    pop rbp
    ret
