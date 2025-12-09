@@ -311,18 +311,60 @@ end_count:
 showNumMinesP2:
    push rbp
    mov  rbp, rsp
-   ;guardem l'estat dels registres del processador perquè
-   ;les funcions de C no mantenen l'estat dels registres.	
    
-   
-   
-   snm_end:
-   ;restaurar l'estat dels registres que s'han guardat a la pila.
-   
+   ; si numMines > 99 llavors numMines = 99;
+   cmp rdi, 99
+   jle snm_ok
+   mov rdi, 99
+
+snm_ok:
+   ; faig el calcul de la variable 'tens'
+   mov rax, rdi      ; rax = numMines
+   mov rbx, 10
+   xor rdx, rdx      ; netejar per DIV
+   div rbx           ; rax = tens, rdx = units
+
+   ; mostrar desenes
+   ; si (tens > 0) ASCII = tens + '0' en cas contrari ' '
+   cmp rax, 0
+   jne snm_tens_digit
+
+   mov bl, ' '
+   jmp snm_tens_print
+
+snm_tens_digit:
+   ; canvi a ASCII
+   add al, '0'
+   mov bl, al
+
+snm_tens_print:
+   ; crido a gotoxyP2_C(3,40)
+   mov edi, 3
+   mov esi, 40
+   call gotoxyP2
+
+   ; printchP2_C(charac)
+   mov dil, bl
+   call printchP2
+
+   ; mostro unitats
+   mov al, dl        ; units en AL
+   add al, '0'       ; convertir a ASCII
+   mov bl, al
+
+   ; crido a gotoxyP2_C(3,41)
+   mov edi, 3
+   mov esi, 41
+   call gotoxyP2
+
+   ; crido a printchP2_C(charac)
+   mov dil, bl
+   call printchP2
+
+snm_end:
    mov rsp, rbp
    pop rbp
-   ret
-	
+   ret	
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Posicionar el cursor a la pantalla dins del tauler, en funció de
